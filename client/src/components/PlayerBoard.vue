@@ -1,16 +1,16 @@
 <script lang="ts" setup>
+import { TileColor, Tuple } from "../colors";
 import { zip } from "lodash";
 import { ref } from "vue";
-import { TileColor, Tuple } from "../colors";
 import TileHolder from "./TileHolder.vue";
 
-export type PlayerBoardProps = {
+export interface PlayerBoardProps {
   rows: (TileColor | undefined)[][];
   plate: (TileColor | undefined)[][];
   dropped: Tuple<TileColor | undefined, 7>;
-  selected?: [TileColor, number];
   playerName: string;
-};
+  selected?: [TileColor, number];
+}
 
 const BLACK = TileColor.BLACK;
 const BLUE = TileColor.BLUE;

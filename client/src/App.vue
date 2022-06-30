@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TileColor, Tuple, UpToFourColors } from "./colors";
+import { TileColor, UpToFourColors } from "./colors";
 import { shuffle, zip } from "lodash";
 import Tile from "./components/Tile.vue";
 import TileGroup from "./components/TileGroup.vue";
