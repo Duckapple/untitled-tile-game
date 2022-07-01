@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TileColor, UpToFourColors } from "./colors";
+import { TileColor, UpToFourColors } from "./model";
 import { shuffle, zip } from "lodash";
 import Tile from "./components/Tile.vue";
 import TileGroup from "./components/TileGroup.vue";
@@ -10,7 +10,7 @@ import PlayerBoard, {
   PlayerBoardProps,
 } from "./components/PlayerBoard.vue";
 
-const tiles = ref<TileColor[]>(
+const bag = ref<TileColor[]>(
   shuffle([
     ...Array(20).fill(TileColor.BLACK),
     ...Array(20).fill(TileColor.BLUE),
@@ -25,18 +25,18 @@ const middle = ref<TileColor[]>([TileColor.FIRST]);
 const discards = ref<TileColor[]>([]);
 
 function shuffleDiscards() {
-  tiles.value = shuffle(discards.value);
+  bag.value = shuffle(discards.value);
   discards.value = [];
 }
 
 const plates = Array(9)
   .fill(null)
   .map(() => {
-    let plate = tiles.value.splice(0, 4);
+    let plate = bag.value.splice(0, 4);
     if (plate.length !== 4 && discards.value.length > 0) {
       console.log("shuffling in discards...");
       shuffleDiscards();
-      plate = [...plate, ...tiles.value.splice(0, 4 - plate.length)];
+      plate = [...plate, ...bag.value.splice(0, 4 - plate.length)];
     }
     return plate as UpToFourColors;
   });

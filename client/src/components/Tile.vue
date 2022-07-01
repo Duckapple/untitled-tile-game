@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { bgColors, TileColor, underColors } from "../colors";
+import { bgColors, underColors } from "../colors";
+import { TileColor } from "../model";
 
 defineProps<{
   color: TileColor;

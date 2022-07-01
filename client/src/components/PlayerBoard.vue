@@ -1,14 +1,15 @@
 <script lang="ts" setup>
-import { TileColor, Tuple } from "../colors";
 import { zip } from "lodash";
 import { ref } from "vue";
 import TileHolder from "./TileHolder.vue";
+import { PlayerBoard, TileColor, Tuple } from "../model";
 
-export interface PlayerBoardProps {
+export interface PlayerBoardProps extends PlayerBoard {
   rows: (TileColor | undefined)[][];
   plate: (TileColor | undefined)[][];
   dropped: Tuple<TileColor | undefined, 7>;
   playerName: string;
+
   selected?: [TileColor, number];
 }
 
@@ -28,12 +29,18 @@ const positions = [
 ];
 const backgrounds = positions.flat();
 
-defineProps<PlayerBoardProps>();
+const { plate } = defineProps<PlayerBoardProps>();
 
 const selectedDropped = ref<TileColor[]>();
+
+const addCheat = (i: number) => {
+  const r = Math.floor(i / 5);
+  const c = i % 5;
+  plate[r][c] = plate[r][c] === TileColor.RED ? undefined : TileColor.RED;
+};
 </script>
 <script lang="ts">
-export function createPlayerBoard(playerName: string): PlayerBoardProps {
+export function createPlayerBoard(playerName: string): PlayerBoard {
   const rows = Array(5)
     .fill(null)
     .map((_, i) => Array(i + 1).fill(undefined));
@@ -49,7 +56,6 @@ export function createPlayerBoard(playerName: string): PlayerBoardProps {
     rows,
     plate,
     dropped,
-    selected: undefined,
   };
 }
 </script>
@@ -72,14 +78,7 @@ export function createPlayerBoard(playerName: string): PlayerBoardProps {
           v-for="([color], i) in zip(plate.flat())"
           :color="color"
           :background="backgrounds[i]"
-          @click="
-            () => {
-              const r = Math.floor(i / 5);
-              const c = i % 5;
-              plate[r][c] =
-                plate[r][c] === TileColor.RED ? undefined : TileColor.RED;
-            }
-          "
+          @click="addCheat(i)"
         />
       </div>
     </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { TileColor, UpToFourColors } from "../colors";
+import { TileColor, UpToFourColors } from "../model";
 import Tile from "./Tile.vue";
 
 const { selected } = defineProps<{

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { backgroundColors, TileColor } from "../colors";
+import { backgroundColors } from "../colors";
+import { TileColor } from "../model";
 import Tile from "./Tile.vue";
 import { ref } from "vue";
 
