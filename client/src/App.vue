@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { shuffle } from "lodash";
 import { ref } from "vue";
-import { TileColor, UpToFourColors, createPlayerBoard } from "./model";
+import {
+  TileColor,
+  UpToFourColors,
+  createPlayerBoard,
+  MessageType,
+} from "./model";
 import Tile from "./components/Tile.vue";
 import TileGroup from "./components/TileGroup.vue";
 import PlayerBoard from "./components/PlayerBoard.vue";
@@ -79,7 +84,16 @@ const selectedItems = ref<TileColor[]>();
     <Tile v-for="color in middle" :color="color" />
   </div>
   <PlayerBoard v-bind="boardOne" />
-  <button @click="() => ws.send('Hi')">Clicky</button>
+  <button
+    @click="
+      () =>
+        ws.send(
+          JSON.stringify({ type: MessageType.GET_STATE, payload: 'hi mom' })
+        )
+    "
+  >
+    Clicky
+  </button>
   <div class="h-xl"></div>
 </template>
 
@@ -88,7 +102,6 @@ const selectedItems = ref<TileColor[]>();
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  @apply flex flex-col;
+  @apply flex flex-col text-gray-900 bg-white dark:bg-gray-900 dark:text-gray-200;
 }
 </style>

@@ -1,10 +1,16 @@
 import express from "express";
 import expressWs from "express-ws";
+import { Message, MessageType } from "./model/communication";
 const { app } = expressWs(express());
 
 app.ws("/", (ws, req) => {
   ws.on("message", (msg) => {
-    console.log(msg);
+    const m = JSON.parse(msg as unknown as string) as Message;
+    if (m.type === MessageType.GET_STATE) {
+      //
+    }
+    console.log(m);
+    ws.send("Hi back!");
   });
 });
 

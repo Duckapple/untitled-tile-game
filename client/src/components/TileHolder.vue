@@ -18,7 +18,7 @@ const bg = ref(background ? backgroundColors[background] : "");
   <div
     class="relative w-16 h-16 border-2 bg-opacity-80 rounded-2xl"
     :class="{
-      'border-black': !hidden,
+      'border-black dark:border-gray-200': !hidden,
       'border-transparent': hidden,
       [bg]: background,
       'mb-4': number != null,

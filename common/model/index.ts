@@ -1,3 +1,5 @@
+export * from "./communication";
+
 export interface GameState {
   currentPlayer: number;
   playerBoards: PlayerBoard[];
