@@ -6,9 +6,10 @@ import { PlayerBoard, TileColor, Tuple } from "../model";
 
 export interface PlayerBoardProps extends PlayerBoard {
   rows: (TileColor | undefined)[][];
-  plate: (TileColor | undefined)[][];
+  table: (TileColor | undefined)[][];
   dropped: Tuple<TileColor | undefined, 7>;
   playerName: string;
+  score: number;
 
   selected?: [TileColor, number];
 }
@@ -29,35 +30,15 @@ const positions = [
 ];
 const backgrounds = positions.flat();
 
-const { plate } = defineProps<PlayerBoardProps>();
+const { table } = defineProps<PlayerBoardProps>();
 
 const selectedDropped = ref<TileColor[]>();
 
 const addCheat = (i: number) => {
   const r = Math.floor(i / 5);
   const c = i % 5;
-  plate[r][c] = plate[r][c] === TileColor.RED ? undefined : TileColor.RED;
+  table[r][c] = table[r][c] === TileColor.RED ? undefined : TileColor.RED;
 };
-</script>
-<script lang="ts">
-export function createPlayerBoard(playerName: string): PlayerBoard {
-  const rows = Array(5)
-    .fill(null)
-    .map((_, i) => Array(i + 1).fill(undefined));
-
-  const plate = Array(5)
-    .fill(null)
-    .map(() => Array(5).fill(undefined));
-
-  const dropped = Array(7).fill(undefined) as Tuple<TileColor | undefined, 7>;
-
-  return {
-    playerName,
-    rows,
-    plate,
-    dropped,
-  };
-}
 </script>
 
 <template>
@@ -75,7 +56,7 @@ export function createPlayerBoard(playerName: string): PlayerBoard {
       </div>
       <div class="grid grid-cols-5 gap-1">
         <TileHolder
-          v-for="([color], i) in zip(plate.flat())"
+          v-for="([color], i) in zip(table.flat())"
           :color="color"
           :background="backgrounds[i]"
           @click="addCheat(i)"

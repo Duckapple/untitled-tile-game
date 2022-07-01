@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { TileColor, UpToFourColors } from "./model";
-import { shuffle, zip } from "lodash";
+import { shuffle } from "lodash";
+import { ref } from "vue";
+import { TileColor, UpToFourColors, createPlayerBoard } from "./model";
 import Tile from "./components/Tile.vue";
 import TileGroup from "./components/TileGroup.vue";
-import TileHolder from "./components/TileHolder.vue";
-import { ref } from "vue";
-import PlayerBoard, {
-  createPlayerBoard,
-  PlayerBoardProps,
-} from "./components/PlayerBoard.vue";
+import PlayerBoard from "./components/PlayerBoard.vue";
+
+const ws = new WebSocket("ws://localhost:8080");
+ws.addEventListener("message", (e) => {
+  console.log(e.data);
+});
 
 const bag = ref<TileColor[]>(
   shuffle([
@@ -42,8 +43,8 @@ const plates = Array(9)
   });
 
 const boardOne = ref(createPlayerBoard("Duckapple"));
-boardOne.value.plate[0][3] = TileColor.BLACK;
-boardOne.value.plate[1][1] = TileColor.BLUE;
+boardOne.value.table[0][3] = TileColor.BLACK;
+boardOne.value.table[1][1] = TileColor.BLUE;
 
 // Absolute hack to ensure the classes are defined
 let classes = "col-span-4 col-span-3 col-span-2 col-span-1";
@@ -78,6 +79,7 @@ const selectedItems = ref<TileColor[]>();
     <Tile v-for="color in middle" :color="color" />
   </div>
   <PlayerBoard v-bind="boardOne" />
+  <button @click="() => ws.send('Hi')">Clicky</button>
   <div class="h-xl"></div>
 </template>
 
