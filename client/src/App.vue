@@ -1,55 +1,33 @@
 <script setup lang="ts">
-import { shuffle } from "lodash";
 import { ref } from "vue";
 import {
   TileColor,
-  UpToFourColors,
-  createPlayerBoard,
   MessageType,
+  GetStateMessage,
+  MessageResponse,
+  GameState,
 } from "./model";
 import Tile from "./components/Tile.vue";
 import TileGroup from "./components/TileGroup.vue";
 import PlayerBoard from "./components/PlayerBoard.vue";
 
+const state = ref<GameState>();
+
 const ws = new WebSocket("ws://localhost:8080");
+
 ws.addEventListener("message", (e) => {
-  console.log(e.data);
+  const m = JSON.parse(e.data.toString()) as MessageResponse;
+  if (m.type === MessageType.GET_STATE) {
+    state.value = m.state;
+    console.log("Updated state");
+  }
 });
 
-const bag = ref<TileColor[]>(
-  shuffle([
-    ...Array(20).fill(TileColor.BLACK),
-    ...Array(20).fill(TileColor.BLUE),
-    ...Array(20).fill(TileColor.RED),
-    ...Array(20).fill(TileColor.YELLOW),
-    ...Array(20).fill(TileColor.CYAN),
-  ])
-);
-
-const middle = ref<TileColor[]>([TileColor.FIRST]);
-
-const discards = ref<TileColor[]>([]);
-
-function shuffleDiscards() {
-  bag.value = shuffle(discards.value);
-  discards.value = [];
-}
-
-const plates = Array(9)
-  .fill(null)
-  .map(() => {
-    let plate = bag.value.splice(0, 4);
-    if (plate.length !== 4 && discards.value.length > 0) {
-      console.log("shuffling in discards...");
-      shuffleDiscards();
-      plate = [...plate, ...bag.value.splice(0, 4 - plate.length)];
-    }
-    return plate as UpToFourColors;
-  });
-
-const boardOne = ref(createPlayerBoard("Duckapple"));
-boardOne.value.table[0][3] = TileColor.BLACK;
-boardOne.value.table[1][1] = TileColor.BLUE;
+ws.addEventListener("open", () => {
+  const msg: GetStateMessage = { type: MessageType.GET_STATE };
+  ws.send(JSON.stringify(msg));
+  console.log("Connected to server");
+});
 
 // Absolute hack to ensure the classes are defined
 let classes = "col-span-4 col-span-3 col-span-2 col-span-1";
@@ -57,14 +35,13 @@ classes = classes;
 
 const selected = ref<[TileColor, number]>();
 const selectedItems = ref<TileColor[]>();
-// [].filter();
 </script>
 
 <template>
   <!-- <div class="flex flex-wrap -space-x-12"> -->
   <div class="grid grid-cols-3 w-lg">
     <TileGroup
-      v-for="(plate, i) in plates"
+      v-for="(plate, i) in state?.middleBoard.plates"
       :colors="plate"
       :selected="selected?.[1] === i ? selected[0] : undefined"
       :onPick="
@@ -81,19 +58,14 @@ const selectedItems = ref<TileColor[]>();
     />
   </div>
   <div class="flex p-8">
-    <Tile v-for="color in middle" :color="color" />
+    <template
+      v-if="state"
+      v-for="[color, amount] in (Object.entries(state.middleBoard.common) as [TileColor, number][])"
+    >
+      <Tile v-for="_ in Array(amount)" :color="color" />
+    </template>
   </div>
-  <PlayerBoard v-bind="boardOne" />
-  <button
-    @click="
-      () =>
-        ws.send(
-          JSON.stringify({ type: MessageType.GET_STATE, payload: 'hi mom' })
-        )
-    "
-  >
-    Clicky
-  </button>
+  <PlayerBoard v-if="state" v-bind="state.playerBoards[0]" />
   <div class="h-xl"></div>
 </template>
 

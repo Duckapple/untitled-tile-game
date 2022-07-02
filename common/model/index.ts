@@ -63,17 +63,3 @@ export interface MiddleBoard {
   plates: UpToFourColors[];
   common: Record<TileColor, number>;
 }
-
-export function createMiddleBoard(playerCount: number): MiddleBoard {
-  return {
-    plates: Array<UpToFourColors>(1 + playerCount * 2).fill([]),
-    common: {
-      BLUE: 0,
-      CYAN: 0,
-      YELLOW: 0,
-      RED: 0,
-      BLACK: 0,
-      FIRST: 0,
-    },
-  };
-}
