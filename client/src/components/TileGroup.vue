@@ -29,7 +29,7 @@ const setHighlit = (color?: TileColor) => (highlit.value = color);
 
 <style scoped>
 .tile-plate {
-  @apply p-8 w-52 grid grid-cols-2 gap-[0.125rem] rounded-full border-2 border-gray-700 transition duration-200 scale-50 bg-teal-300;
+  @apply p-8 w-52 h-52 grid grid-cols-2 gap-[0.125rem] rounded-full border-2 border-gray-700 transition duration-200 scale-50 bg-orange-600;
 }
 
 .tile-plate:hover {

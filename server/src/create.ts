@@ -1,10 +1,12 @@
 import lodash from "lodash";
+import log from "./log";
 const { shuffle } = lodash;
 import {
-  createPlayerBoard,
   GameState,
   MiddleBoard,
+  PlayerBoard,
   TileColor,
+  Tuple,
   UpToFourColors,
 } from "./model";
 
@@ -56,10 +58,30 @@ function refillPlates(state: GameState): void {
   state.middleBoard.plates = state.middleBoard.plates.map(() => {
     let plate = state.bag.splice(0, 4);
     if (plate.length !== 4 && state.discards.length > 0) {
-      console.log("shuffling in discards...");
+      log("shuffling in discards...");
       shuffleDiscardsBack(state);
       plate = [...plate, ...state.bag.splice(0, 4 - plate.length)];
     }
     return plate as UpToFourColors;
   });
+}
+
+export function createPlayerBoard(playerName: string): PlayerBoard {
+  const rows = Array<(TileColor | undefined)[]>(5)
+    .fill([])
+    .map((_, i) => Array(i + 1).fill(undefined));
+
+  const table = Array(5)
+    .fill(null)
+    .map(() => Array(5).fill(undefined));
+
+  const dropped = Array(7).fill(undefined) as Tuple<TileColor | undefined, 7>;
+
+  return {
+    playerName,
+    rows,
+    table,
+    dropped,
+    score: 0,
+  };
 }

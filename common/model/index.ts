@@ -1,5 +1,12 @@
 export * from "./communication";
 
+export type RoomDetails = {
+  roomID: string;
+  state?: GameState;
+  players: string[];
+  creator: string;
+};
+
 export interface GameState {
   currentPlayer: number;
   playerBoards: PlayerBoard[];
@@ -37,26 +44,6 @@ export interface PlayerBoard {
   dropped: Tuple<TileColor | undefined, 7>;
   playerName: string;
   score: number;
-}
-
-export function createPlayerBoard(playerName: string): PlayerBoard {
-  const rows = Array(5)
-    .fill(null)
-    .map((_, i) => Array(i + 1).fill(undefined));
-
-  const table = Array(5)
-    .fill(null)
-    .map(() => Array(5).fill(undefined));
-
-  const dropped = Array(7).fill(undefined) as Tuple<TileColor | undefined, 7>;
-
-  return {
-    playerName,
-    rows,
-    table,
-    dropped,
-    score: 0,
-  };
 }
 
 export interface MiddleBoard {

@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { backgroundColors } from "../colors";
+import {
+  backgroundColors,
+  colorShorthands,
+  colorShorthandColors,
+} from "../colors";
 import { TileColor } from "../model";
+import { store } from "../state";
 import Tile from "./Tile.vue";
 import { ref } from "vue";
 
@@ -27,6 +32,13 @@ const bg = ref(background ? backgroundColors[background] : "");
     <span v-if="number != null" class="absolute right-6 -bottom-7">
       {{ number }}
     </span>
+    <div
+      v-if="store.settings.colorBlind && !color && background"
+      class="flex items-center justify-center w-full h-full font-serif text-5xl font-bold select-none"
+      :class="colorShorthandColors[background]"
+    >
+      <span>{{ colorShorthands[background] }}</span>
+    </div>
     <Tile
       v-if="color"
       class="absolute -top-3.5 -left-0.5"
