@@ -42,7 +42,7 @@ const bg = ref(background ? backgroundColors[background] : "");
     <Tile
       v-if="color"
       class="absolute -top-3.5 -left-0.5"
-      :class="{ 'opacity-50': transparent }"
+      :class="{ 'opacity-75': transparent }"
       :color="color"
     />
   </div>

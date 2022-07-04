@@ -11,13 +11,16 @@ import {
   BeginMessage,
   MakeMoveMessage,
 } from "./model";
-import { store } from "./state";
-import Tile from "./components/Tile.vue";
-import TileGroup from "./components/TileGroup.vue";
-import PlayerBoard from "./components/PlayerBoard.vue";
 import RoomPrompt from "./components/RoomPrompt.vue";
 import Room from "./components/Room.vue";
 import { omit } from "lodash";
+import Game from "./components/Game.vue";
+
+export type MakeMoveFunction = (args: {
+  row?: number;
+  middle?: TileColor;
+  plate?: MakeMoveMessage["plate"];
+}) => void;
 
 const username = ref<string>();
 const UUID = ref<string>();
@@ -67,13 +70,6 @@ ws.addEventListener("close", () => {
   location.hash = "";
 });
 
-// Absolute hack to ensure the classes are defined
-let classes = "col-span-4 col-span-3 col-span-2 col-span-1";
-classes = classes;
-
-const selected = ref<[TileColor, number]>();
-const selectedItems = ref<TileColor[]>();
-
 const onJoin = (userName: string, roomID: string) => {
   if (!UUID.value) return;
   username.value = userName;
@@ -116,16 +112,8 @@ const onBegin = () => {
   ws.send(JSON.stringify(msg));
 };
 
-type PartialMove = Partial<Pick<MakeMoveMessage, "middle" | "row">> & {
-  plate: Partial<MakeMoveMessage["plate"]>;
-};
-const moveParams = ref<PartialMove>({ row: 0, plate: { index: 0 } });
-
-const onMakeMove = (args: {
-  row?: number;
-  middle?: TileColor;
-  plate?: Partial<MakeMoveMessage["plate"]>;
-}) => {
+const onMakeMove: MakeMoveFunction = (args) => {
+  console.log("hello there", args);
   if (!roomDetails.value || !UUID.value) return;
   const hasPlate = args.plate?.color != null;
   const hasMiddle = args.middle != null;
@@ -152,75 +140,16 @@ const onMakeMove = (args: {
     :username="username"
     :onBegin="onBegin"
   />
-  <template v-if="roomDetails?.state">
-    <div class="flex">
-      <div class="grid grid-cols-3 w-lg">
-        <TileGroup
-          v-for="(plate, i) in roomDetails.state.middleBoard.plates"
-          :colors="plate"
-          :selected="selected?.[1] === i ? selected[0] : undefined"
-          :onPick="
-            (t) => {
-              if (selected?.[0] === t && selected?.[1] === i) {
-                selected = undefined;
-                selectedItems = undefined;
-              } else {
-                selected = [t, i];
-                selectedItems = plate.filter((color) => color === t);
-              }
-            }
-          "
-        />
-      </div>
-    </div>
-    <div class="flex p-8">
-      <template
-        v-for="[color, amount] in (Object.entries(roomDetails.state.middleBoard.common) as [TileColor, number][])"
-      >
-        <Tile v-for="_ in Array(amount)" :color="color" />
-      </template>
-    </div>
-    <PlayerBoard
-      v-for="player in roomDetails.state.playerBoards"
-      v-bind="player"
-    />
-    <button @click="() => onMakeMove(moveParams)">Dummy message</button>
-    <input
-      class="w-16 ml-4 bg-transparent"
-      v-model="moveParams.row"
-      type="number"
-      max="4"
-      min="0"
-    />
-    <select class="w-24 ml-4 bg-transparent" v-model="moveParams.middle">
-      <option :value="undefined">None</option>
-      <option v-for="color in TileColor" :value="color">{{ color }}</option>
-    </select>
-    <select class="w-24 ml-4 bg-transparent" v-model="moveParams.plate!.color">
-      <option :value="undefined">None</option>
-      <option v-for="color in TileColor" :value="color">{{ color }}</option>
-    </select>
-    <input
-      class="w-16 ml-4 bg-transparent"
-      v-model="moveParams.plate!.index"
-      type="number"
-      :max="roomDetails.players.length * 2"
-      min="0"
-    />
-    <div>
-      <label
-        for="colorBlindCheck"
-        class="px-1 mr-2 font-serif border rounded-md"
-        >T</label
-      >
-      <input
-        type="checkbox"
-        id="colorBlindCheck"
-        v-model="store.settings.colorBlind"
-      />
-    </div>
-    <div class="h-xl"></div>
-  </template>
+  <Game
+    v-if="username && roomDetails?.state"
+    v-bind="{
+      players: roomDetails.players,
+      creator: roomDetails.creator,
+      state: roomDetails.state,
+      username,
+      onMakeMove,
+    }"
+  />
   <div class="fixed bottom-4 right-4">
     <div
       v-for="error in errors"
