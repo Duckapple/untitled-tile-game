@@ -1,5 +1,7 @@
 # Untitled Tile Game
 
+![Banner image](docs/banner.png)
+
 I have played the board game Azul with some friends between study sessions, and I would like to be able to play it at other times too, especially when we're all at home.
 
 This project aims to implement the entire game, including a lobby system, in a visually interesting way
