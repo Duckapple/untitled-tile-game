@@ -65,6 +65,7 @@ export type JoinRoomResponse = RoomDetails & {
 };
 export type UpdateRoomResponse = Partial<Omit<RoomDetails, "roomID">> & {
   type: MessageType.UPDATE_ROOM;
+  update: string;
 };
 export type AssignUUIDResponse = {
   type: MessageType.ASSIGN_UUID;

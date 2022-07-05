@@ -26,16 +26,28 @@ const username = ref<string>();
 const UUID = ref<string>();
 const roomDetails = ref<RoomDetails>();
 
-const errors = ref<string[]>([]);
+const notifs = ref<string[]>([]);
 
 const ws = new WebSocket("ws://localhost:8080");
 
-ws.addEventListener("message", (e) => {
-  console.log(e.data);
-  const m = JSON.parse(e.data.toString()) as MessageResponse;
+const addNotif = (message: string) => {
+  notifs.value.push(message);
+  setTimeout(() => {
+    notifs.value.shift();
+  }, 10000);
+};
+
+ws.addEventListener("message", (evt) => {
+  let m: MessageResponse;
+  try {
+    m = JSON.parse(evt.data.toString());
+  } catch (err) {
+    addNotif(`Could not parse message '${evt.data}'`);
+    return;
+  }
+
   if (m.type === MessageType.ASSIGN_UUID) {
     UUID.value = m.userID;
-    console.log(UUID.value);
   } else if (m.type === MessageType.CREATE_ROOM) {
     location.hash = `#${m.roomID}`;
     roomDetails.value = omit(m, "type");
@@ -44,28 +56,26 @@ ws.addEventListener("message", (e) => {
     roomDetails.value = omit(m, "type");
   } else if (m.type === MessageType.UPDATE_ROOM) {
     if (!roomDetails.value) {
-      console.error("Got update for non-existing room details");
+      addNotif("Got update for non-existing room details!");
     } else {
       roomDetails.value = {
         ...roomDetails.value,
         ...omit(m, "type"),
       };
     }
+    if (m.update) addNotif(m.update);
   } else if (m.type === MessageType.ERROR) {
-    errors.value.push(m.error);
-    setTimeout(() => {
-      errors.value.shift();
-    }, 5000);
+    if (m.error) addNotif(m.error);
   } else {
-    console.error(`Got unhandled message '${e.data}'`);
+    addNotif(`Got unhandled message '${evt.data}'`);
   }
 });
 
 ws.addEventListener("open", () => {
-  console.log("Connected to server");
+  addNotif("Connected to server");
 });
 ws.addEventListener("close", () => {
-  console.log("Disconnected from server");
+  addNotif("Disconnected from server");
   roomDetails.value = undefined;
   location.hash = "";
 });
@@ -152,7 +162,7 @@ const onMakeMove: MakeMoveFunction = (args) => {
   />
   <div class="fixed bottom-4 right-4">
     <div
-      v-for="error in errors"
+      v-for="error in notifs"
       class="p-4 mb-2 bg-white border-2 border-red-500 w-md dark:bg-gray-900"
     >
       {{ error }}

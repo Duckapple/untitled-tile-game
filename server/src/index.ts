@@ -90,11 +90,13 @@ function handleJoinRoom(ws: WS.WebSocket, m: JoinRoomMessage) {
     creator: room.creator.name,
     players: room.players.map(({ name }) => name),
     roomID: m.roomID,
+    state: room.state,
   };
   ws.send(JSON.stringify(joinRes));
   const update: UpdateRoomResponse = {
     type: MessageType.UPDATE_ROOM,
     players: room.players.map(({ name }) => name),
+    update: `User ${m.userName} joined the room`,
   };
   otherPlayers.forEach((otherPlayer) =>
     otherPlayer.send(JSON.stringify(update))
@@ -134,6 +136,7 @@ function handleRearrangePlayers(ws: WS.WebSocket, m: RearrangePlayersMessage) {
   const update: UpdateRoomResponse = {
     type: MessageType.UPDATE_ROOM,
     players: reordered.map(({ name }) => name),
+    update: "Rearranged players",
   };
   reordered.forEach(({ socket }) => socket.send(JSON.stringify(update)));
   log(`Rearranged players in room ${m.roomID}`);
@@ -152,6 +155,7 @@ function handleBegin(ws: WS.WebSocket, m: BeginMessage) {
   const update: UpdateRoomResponse = {
     type: MessageType.UPDATE_ROOM,
     state: room.state,
+    update: "Game started",
   };
   room.players.forEach(({ socket }) => socket.send(JSON.stringify(update)));
   log(`Began game in room ${m.roomID}`);
@@ -191,6 +195,7 @@ function handleMakeMove(ws: WS.WebSocket, m: MakeMoveMessage) {
 
   let tiles: TileColor[] = [];
   let firstToken: TileColor.FIRST | null = null;
+  let moveDescription: string;
   if (m.plate != null) {
     const plate = room.state.middleBoard.plates[m.plate.index] ?? [];
     tiles = plate.filter((color) => color === m.plate!.color);
@@ -206,6 +211,11 @@ function handleMakeMove(ws: WS.WebSocket, m: MakeMoveMessage) {
           room.state!.middleBoard.common[color] += 1;
         })
     );
+    moveDescription = `picked ${
+      tiles.length
+    } ${m.plate.color.toLowerCase()} tile${
+      tiles.length > 1 ? "s" : ""
+    } from plate ${m.plate.index + 1}.`;
     // Remove items on plate
     cleanup.push(() => (room.state!.middleBoard.plates[m.plate!.index] = []));
   } else {
@@ -223,6 +233,12 @@ function handleMakeMove(ws: WS.WebSocket, m: MakeMoveMessage) {
       // Remove go-first token
       cleanup.push(() => (room.state!.middleBoard.common[TileColor.FIRST] = 0));
     }
+    const pickedFirst = firstToken
+      ? ", picking the first player token as well"
+      : "";
+    moveDescription = `picked ${tiles.length} ${m.middle?.toLowerCase()} tile${
+      tiles.length > 1 ? "s" : ""
+    } from middle${pickedFirst}.`;
     // Remove chosen color from middle
     cleanup.push(() => (room.state!.middleBoard.common[m.middle!] = 0));
   }
@@ -231,15 +247,19 @@ function handleMakeMove(ws: WS.WebSocket, m: MakeMoveMessage) {
 
   const row = playerBoard.rows[m.row];
 
-  for (let i = row.length - 1; i >= 0; i--) {
-    if (row[i] == null) {
-      row[i] = tiles.pop();
+  if (
+    [null, undefined, tiles[0]].includes(row[row.length - 1]) &&
+    !playerBoard.table[m.row].includes(tiles[0])
+  )
+    for (let i = row.length - 1; i >= 0; i--) {
+      if (row[i] == null) {
+        row[i] = tiles.pop();
+      }
     }
-  }
 
   for (let i = 0; i < playerBoard.dropped.length; i++) {
     if (playerBoard.dropped[i] != null) continue;
-    const element = tiles.pop() ?? firstToken;
+    const element = firstToken ?? tiles.pop();
     if (element === firstToken) firstToken = null;
     if (!element) break;
     playerBoard.dropped[i] = element;
@@ -253,6 +273,7 @@ function handleMakeMove(ws: WS.WebSocket, m: MakeMoveMessage) {
   const msg: UpdateRoomResponse = {
     type: MessageType.UPDATE_ROOM,
     state: room.state,
+    update: `${room.players[playerIndex].name} ${moveDescription}`,
   };
 
   room.players.forEach(({ socket }) => socket.send(JSON.stringify(msg)));

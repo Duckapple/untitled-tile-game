@@ -13,7 +13,7 @@ export interface PlayerBoardProps extends PlayerBoard {
   creator: boolean;
   self: boolean;
   interactive: boolean;
-  onMakeMove: (row: number) => void;
+  onMakeMove?: (row: number) => void;
 
   selected?: TileColor[];
 }
@@ -56,7 +56,10 @@ const hovered = computed<{
     ...props.rows[hoveredRow.value].map((color) => ({ color })),
   ];
   if (
-    [null, undefined, color].includes(rowAtHover[rowAtHover.length - 1].color)
+    [null, undefined, color].includes(
+      rowAtHover[rowAtHover.length - 1].color
+    ) &&
+    !props.table[hoveredRow.value].includes(color)
   )
     for (let i = rowAtHover.length; i >= 0; i--) {
       const el = rowAtHover[i];
@@ -86,43 +89,52 @@ const hovered = computed<{
     dropped: droppedAtHover,
   };
 });
-
-const addCheat = (i: number) => {
-  const r = Math.floor(i / 5);
-  const c = i % 5;
-  props.table[r][c] =
-    props.table[r][c] === TileColor.RED ? undefined : TileColor.RED;
-};
-// const log = console.log;
 </script>
 
 <template>
-  <div class="px-8 pt-2 pb-6 border-2 border-black">
-    <div class="mb-2 text-xl" :class="{ underline: self }">
-      {{ playerName }}{{ creator ? " 👑" : undefined }}
+  <div
+    class="flex flex-col px-8 pt-2 pb-6 border-2 w-4xl"
+    :class="{
+      'border-black dark:border-gray-200': !interactive,
+      'border-green-800 dark:border-green-300': interactive,
+    }"
+  >
+    <div class="flex justify-between mb-2 text-xl" :class="{ underline: self }">
+      <span>{{ playerName }}{{ creator ? " 👑" : undefined }}</span>
+      <span v-if="interactive" class="text-green-800 dark:text-green-300"
+        >Your Turn</span
+      >
     </div>
     <div class="flex mb-4 space-x-4">
       <div
         class="grid grid-cols-5 gap-1 outline-4 outline-lime-500 outline-offset-4 rounded-2xl"
-        :class="{ outline: interactive && selected }"
-        @pointerleave="() => interactive && (hoveredRow = undefined)"
+        :class="{ outline: self && interactive && selected }"
+        @pointerleave="() => self && interactive && (hoveredRow = undefined)"
       >
         <template v-for="(row, index) in hovered.rows">
           <div
             v-if="row.length < 5"
             :class="`col-span-${5 - row.length}`"
             @pointerenter="
-              () => interactive && hoveredRow !== index && (hoveredRow = index)
+              () =>
+                self &&
+                interactive &&
+                hoveredRow !== index &&
+                (hoveredRow = index)
             "
-            @click="() => interactive && onMakeMove(index)"
+            @click="() => self && interactive && onMakeMove?.(index)"
           />
           <TileHolder
             v-for="color in row"
             v-bind="color"
             @pointerenter="
-              () => interactive && hoveredRow !== index && (hoveredRow = index)
+              () =>
+                self &&
+                interactive &&
+                hoveredRow !== index &&
+                (hoveredRow = index)
             "
-            @click="() => interactive && onMakeMove(index)"
+            @click="() => self && interactive && onMakeMove?.(index)"
           />
         </template>
       </div>
@@ -131,19 +143,22 @@ const addCheat = (i: number) => {
           v-for="([color], i) in zip(table.flat())"
           :color="color"
           :background="backgrounds[i]"
-          @click="addCheat(i)"
         />
       </div>
     </div>
-    <div class="flex space-x-1">
-      <TileHolder
-        v-for="[color, penalty] in zip(
-          hovered.dropped,
-          [-1, -1, -2, -2, -2, -3, -3]
-        )"
-        v-bind="color"
-        :number="penalty"
-      />
+    <div class="flex items-end justify-between">
+      <div class="flex">
+        <TileHolder
+          v-for="([color, penalty], i) in zip(
+            hovered.dropped,
+            [-1, -1, -2, -2, -2, -3, -3]
+          )"
+          v-bind="color"
+          :number="penalty"
+          :class="{ 'ml-4': i === 5, 'ml-1': i > 0 && i !== 5 }"
+        />
+      </div>
+      <span class="mb-2 text-5xl">{{ score }} pts</span>
     </div>
   </div>
 </template>
