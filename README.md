@@ -31,7 +31,6 @@ It is automatically dropped when picked up, counting as negative points.
 
 I'm working on these things right now. Nothing can stop my progress!
 
-- Consequence hint for taking pieces from plates -- how does middle look after picking pieces?
 - The ability to calculate scores
 - The ability to end a round
 - The ability to start a new round

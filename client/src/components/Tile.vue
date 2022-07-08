@@ -12,13 +12,14 @@ defineProps<{
   color: TileColor;
   outlined?: boolean;
   unrestrained?: boolean;
+  transparent?: boolean;
 }>();
 </script>
 
 <template>
   <div
     class="transition-transform duration-200 hover:-translate-y-2 group isolate"
-    :class="{ unrestrained: unrestrained }"
+    :class="{ unrestrained: unrestrained, 'opacity-50': !!transparent }"
   >
     <div class="tile" :class="{ [bgColors[color]]: true, outline: outlined }">
       <div

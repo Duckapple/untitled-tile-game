@@ -96,14 +96,12 @@ const hovered = computed<{
     class="flex flex-col px-8 pt-2 pb-6 border-2 w-4xl"
     :class="{
       'border-black dark:border-gray-200': !interactive,
-      'border-green-800 dark:border-green-300': interactive,
+      'border-lime-500': interactive,
     }"
   >
     <div class="flex justify-between mb-2 text-xl" :class="{ underline: self }">
       <span>{{ playerName }}{{ creator ? " 👑" : undefined }}</span>
-      <span v-if="interactive" class="text-green-800 dark:text-green-300"
-        >Your Turn</span
-      >
+      <span v-if="interactive" class="text-lime-500">Your Turn</span>
     </div>
     <div class="flex mb-4 space-x-4">
       <div

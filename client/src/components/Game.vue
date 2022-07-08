@@ -6,6 +6,7 @@ import { store } from "../state";
 import TileGroup from "./TileGroup.vue";
 import PlayerBoard from "./PlayerBoard.vue";
 import Tile from "./Tile.vue";
+import { mapValues } from "lodash";
 
 const props = defineProps<{
   state: GameState;
@@ -50,6 +51,30 @@ const otherPlayers = computed(() => {
     ...props.state.playerBoards.slice(0, index),
   ];
 });
+
+const middleResult = computed(() => {
+  let obj = mapValues(props.state.middleBoard.common, (v) => ({
+    count: v,
+    transparent: 0,
+  }));
+  if (selectedPlate.value != null) {
+    const { color, index } = selectedPlate.value;
+    const plate = props.state.middleBoard.plates[index];
+    obj = plate
+      .filter((c) => color !== c)
+      .reduce(
+        (obj, c) => ({
+          ...obj,
+          [c]: { ...obj[c], transparent: obj[c]?.transparent + 1 },
+        }),
+        obj
+      );
+  }
+  return Object.entries(obj) as [
+    TileColor,
+    Record<"count" | "transparent", number>
+  ][];
+});
 </script>
 
 <template>
@@ -82,11 +107,9 @@ const otherPlayers = computed(() => {
       </div>
       <div class="flex flex-wrap py-8">
         <div class="h-16"></div>
-        <template
-          v-for="[color, amount], i in (Object.entries(state.middleBoard.common) as [TileColor, number][])"
-        >
+        <template v-for="[color, { count, transparent }] in middleResult">
           <Tile
-            v-for="_ in Array(amount)"
+            v-for="_ in Array(count)"
             :color="color"
             :outlined="
               middleHover === color ||
@@ -103,7 +126,7 @@ const otherPlayers = computed(() => {
                 } else {
                   selectedMiddle = color;
                   selectedPlate = undefined;
-                  selectedItems = Array(amount).fill(color);
+                  selectedItems = Array(count).fill(color);
                   if (
                     color !== TileColor.FIRST &&
                     state.middleBoard.common[TileColor.FIRST] > 0
@@ -113,6 +136,11 @@ const otherPlayers = computed(() => {
                 }
               }
             "
+          />
+          <Tile
+            v-for="_ in Array(transparent)"
+            :color="color"
+            :transparent="true"
           />
         </template>
       </div>
