@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { without } from "lodash";
 import { GameSettings, TileColor } from "../model";
 import Tile from "./Tile.vue";
+import Settings from "./Settings.vue";
 const props = defineProps<{
   username: string;
   players: string[];
@@ -39,6 +40,11 @@ const onDrop = (
 };
 const nav = navigator;
 const location = window.location.origin;
+const settingsApplied = ref(true);
+const applySettings = () => {
+  props.onSettingsUpdate();
+  settingsApplied.value = true;
+};
 </script>
 
 <template>
@@ -88,13 +94,13 @@ const location = window.location.origin;
               "
             >
               <td>
-                {{ player }}
+                <span>{{ player }}</span>
                 <span v-if="player === creator">👑</span>
               </td>
             </tr>
           </table>
         </div>
-        <div class="flex flex-col items-center w-md">
+        <div class="flex flex-col items-center ml-20 w-52">
           <span
             class="text-5xl transition-colors ease-out cursor-pointer"
             :class="{
@@ -123,71 +129,22 @@ const location = window.location.origin;
       </div>
       <div class="flex-1 mt-8">
         <div class="flex flex-col items-center">
-          <table>
-            <tr>
-              <td>
-                <span>Column Points:</span>
-                <input
-                  v-if="username === creator"
-                  v-model="settings.pointRewards.column"
-                />
-                <span v-if="username !== creator" class="mr-0">
-                  {{ settings.pointRewards.column }}
-                </span>
-              </td>
-              <td>
-                <span>Row Points:</span>
-                <input
-                  v-if="username === creator"
-                  v-model="settings.pointRewards.row"
-                />
-                <span v-if="username !== creator" class="mr-0">
-                  {{ settings.pointRewards.row }}
-                </span>
-              </td>
-              <td>
-                <span>All Color Points:</span>
-                <input
-                  v-if="username === creator"
-                  v-model="settings.pointRewards.color"
-                />
-                <span v-if="username !== creator" class="mr-0">
-                  {{ settings.pointRewards.color }}
-                </span>
-              </td>
-            </tr>
-            <tr>
-              <td class="w-full">
-                <span>Penalty Points</span>
-                <input
-                  v-if="username === creator"
-                  v-for="(penalty, i) in settings.pointPenalties"
-                  :value="penalty"
-                  @input="
-                    (e) => {
-                      settings.pointPenalties[i] = Number((e.target as HTMLInputElement).value);
-                    }
-                  "
-                />
-                <span
-                  v-if="username !== creator"
-                  v-for="(penalty, i) in settings.pointPenalties"
-                  :class="{ 'mr-0': i === settings.pointPenalties.length - 1 }"
-                >
-                  {{ penalty }}
-                </span>
-              </td>
-            </tr>
-          </table>
+          <Settings
+            v-bind="{
+              settings,
+              isCreator: username === creator,
+              onChanged: () => (settingsApplied = false),
+            }"
+          />
           <Tile
             v-if="username === creator"
             role="button"
-            :color="TileColor.BLUE"
+            :color="settingsApplied ? TileColor.BLACK : TileColor.BLUE"
             :unrestrained="true"
             class="my-4"
-            @click="onSettingsUpdate"
+            @click="applySettings"
           >
-            <span class="block px-8 py-4 cursor-pointer"> Apply </span>
+            <span class="block px-8 py-4 cursor-pointer"> Apply Settings </span>
           </Tile>
         </div>
       </div>
@@ -205,7 +162,7 @@ tr:last-child {
   @apply border-b-2;
 }
 td {
-  @apply px-4 h-14 flex items-center justify-between;
+  @apply px-4 h-14 flex items-center justify-between grow;
 }
 td:not(:last-child) {
   @apply border-r-2;

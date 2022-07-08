@@ -103,7 +103,7 @@ const onCreate = (userName: string) => {
   ws.send(JSON.stringify(msg));
 };
 const onSettingsUpdate = () => {
-  if (!roomDetails.value) return;
+  if (!roomDetails.value || !UUID.value) return;
   const msg: UpdateSettingsMessage = {
     type: MessageType.UPDATE_SETTINGS,
     userID: UUID.value,
