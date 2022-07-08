@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
 import { MakeMoveFunction } from "../App.vue";
-import { GameState, TileColor } from "../model";
+import { GameState, TileColor, GameSettings } from "../model";
 import { store } from "../state";
 import TileGroup from "./TileGroup.vue";
 import PlayerBoard from "./PlayerBoard.vue";
@@ -13,6 +13,7 @@ const props = defineProps<{
   players: string[];
   username: string;
   creator: string;
+  settings: GameSettings;
   onMakeMove: MakeMoveFunction;
 }>();
 
@@ -152,6 +153,7 @@ const middleResult = computed(() => {
         :self="true"
         :creator="me.playerName === creator"
         :onMakeMove="makeMove"
+        :settings="settings"
       />
       <div>
         <label
@@ -176,6 +178,7 @@ const middleResult = computed(() => {
         "
         :self="false"
         :creator="player.playerName === creator"
+        :settings="settings"
       />
     </div>
   </div>

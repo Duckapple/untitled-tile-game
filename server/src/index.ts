@@ -1,7 +1,5 @@
 import express from "express";
 import expressWs from "express-ws";
-import _ from "lodash";
-const { omit } = _;
 import WS from "ws";
 import {
   Message,
@@ -18,7 +16,7 @@ import {
   MakeMoveMessage,
   TileColor,
 } from "./model";
-import { createGameState } from "./create";
+import { createGameSettings, createGameState } from "./create";
 import { rooms, Player, createRoomID, createUUID } from "./state";
 import log from "./log";
 const { app } = expressWs(express());
@@ -44,17 +42,20 @@ function handleCreateRoom(ws: WS.WebSocket, m: CreateRoomMessage) {
   const time = new Date();
   const player: Player = { name: m.userName, socket: ws, UUID: m.userID };
   const players: Player[] = [player];
+  const settings = createGameSettings();
   rooms[roomID] = {
     creator: player,
     createdAt: time,
     updatedAt: time,
     players,
+    settings,
   };
   const res: CreateRoomResponse = {
     type: MessageType.CREATE_ROOM,
     roomID,
     players: players.map(({ name }) => name),
     creator: m.userName,
+    settings,
   };
   ws.send(JSON.stringify(res));
   log(`Created room ${roomID}`);
@@ -91,6 +92,7 @@ function handleJoinRoom(ws: WS.WebSocket, m: JoinRoomMessage) {
     players: room.players.map(({ name }) => name),
     roomID: m.roomID,
     state: room.state,
+    settings: room.settings,
   };
   ws.send(JSON.stringify(joinRes));
   const update: UpdateRoomResponse = {

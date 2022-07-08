@@ -2,7 +2,7 @@
 import { zip } from "lodash";
 import { computed, ref } from "vue";
 import TileHolder from "./TileHolder.vue";
-import { PlayerBoard, TileColor, Tuple } from "../model";
+import { GameSettings, PlayerBoard, TileColor, Tuple } from "../model";
 
 export interface PlayerBoardProps extends PlayerBoard {
   rows: (TileColor | undefined)[][];
@@ -14,6 +14,7 @@ export interface PlayerBoardProps extends PlayerBoard {
   self: boolean;
   interactive: boolean;
   onMakeMove?: (row: number) => void;
+  settings: GameSettings;
 
   selected?: TileColor[];
 }
@@ -149,7 +150,7 @@ const hovered = computed<{
         <TileHolder
           v-for="([color, penalty], i) in zip(
             hovered.dropped,
-            [-1, -1, -2, -2, -2, -3, -3]
+            settings.pointPenalties
           )"
           v-bind="color"
           :number="penalty"

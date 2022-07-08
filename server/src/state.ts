@@ -1,6 +1,6 @@
 import { WebSocket } from "ws";
 import { randomInt, randomUUID } from "crypto";
-import { GameState } from "./model";
+import { GameSettings, GameState } from "./model";
 
 export type Player = {
   socket: WebSocket;
@@ -14,6 +14,7 @@ type Room = {
   createdAt: Date;
   updatedAt: Date;
   state?: GameState;
+  settings: GameSettings;
 };
 
 type Rooms = Record<string, Room>;

@@ -5,7 +5,17 @@ export type RoomDetails = {
   state?: GameState;
   players: string[];
   creator: string;
+  settings: GameSettings;
 };
+
+export interface GameSettings {
+  pointRewards: {
+    column: number;
+    row: number;
+    color: number;
+  };
+  pointPenalties: Tuple<number, 7>;
+}
 
 export interface GameState {
   currentPlayer: number;

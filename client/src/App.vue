@@ -156,6 +156,7 @@ const onMakeMove: MakeMoveFunction = (args) => {
       players: roomDetails.players,
       creator: roomDetails.creator,
       state: roomDetails.state,
+      settings: roomDetails.settings,
       username,
       onMakeMove,
     }"

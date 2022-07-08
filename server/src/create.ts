@@ -2,6 +2,7 @@ import lodash from "lodash";
 import log from "./log";
 const { shuffle } = lodash;
 import {
+  GameSettings,
   GameState,
   MiddleBoard,
   PlayerBoard,
@@ -83,5 +84,16 @@ export function createPlayerBoard(playerName: string): PlayerBoard {
     table,
     dropped,
     score: 0,
+  };
+}
+
+export function createGameSettings(): GameSettings {
+  return {
+    pointRewards: {
+      column: 7,
+      row: 5,
+      color: 10,
+    },
+    pointPenalties: [-1, -1, -2, -2, -2, -3, -3],
   };
 }
