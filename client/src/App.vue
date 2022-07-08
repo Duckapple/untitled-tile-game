@@ -10,6 +10,7 @@ import {
   RearrangePlayersMessage,
   BeginMessage,
   MakeMoveMessage,
+  UpdateSettingsMessage,
 } from "./model";
 import RoomPrompt from "./components/RoomPrompt.vue";
 import Room from "./components/Room.vue";
@@ -99,7 +100,16 @@ const onCreate = (userName: string) => {
     userName: userName,
     userID: UUID.value,
   };
-  console.log(msg);
+  ws.send(JSON.stringify(msg));
+};
+const onSettingsUpdate = () => {
+  if (!roomDetails.value) return;
+  const msg: UpdateSettingsMessage = {
+    type: MessageType.UPDATE_SETTINGS,
+    userID: UUID.value,
+    roomID: roomDetails.value.roomID,
+    settings: roomDetails.value.settings,
+  };
   ws.send(JSON.stringify(msg));
 };
 const onReorder = (players: string[]) => {
@@ -149,6 +159,7 @@ const onMakeMove: MakeMoveFunction = (args) => {
     :onReorder="onReorder"
     :username="username"
     :onBegin="onBegin"
+    :onSettingsUpdate="onSettingsUpdate"
   />
   <Game
     v-if="username && roomDetails?.state"

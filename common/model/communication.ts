@@ -1,16 +1,18 @@
-import { RoomDetails, TileColor } from ".";
+import { GameSettings, RoomDetails, TileColor } from ".";
 export type Message =
   | CreateRoomMessage
   | JoinRoomMessage
   | RearrangePlayersMessage
   | BeginMessage
-  | MakeMoveMessage;
+  | MakeMoveMessage
+  | UpdateSettingsMessage;
 
 export enum MessageType {
   CREATE_ROOM = "CREATE_ROOM",
   JOIN_ROOM = "JOIN_ROOM",
   REARRANGE_PLAYERS = "REARRANGE_PLAYERS",
   UPDATE_ROOM = "UPDATE_ROOM",
+  UPDATE_SETTINGS = "UPDATE_SETTINGS",
   BEGIN = "BEGIN",
   ERROR = "ERROR",
   ASSIGN_UUID = "ASSIGN_UUID",
@@ -29,6 +31,12 @@ export type JoinRoomMessage = {
   userID: UUID;
   userName: string;
   roomID: string;
+};
+export type UpdateSettingsMessage = {
+  type: MessageType.UPDATE_SETTINGS;
+  userID: UUID;
+  roomID: string;
+  settings: GameSettings;
 };
 export type RearrangePlayersMessage = {
   type: MessageType.REARRANGE_PLAYERS;

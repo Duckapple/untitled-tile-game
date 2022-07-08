@@ -171,7 +171,7 @@ const middleResult = computed(() => {
     </div>
     <div class="flex flex-col w-0 h-0 m-8 scale-50">
       <PlayerBoard
-        v-for="player in otherPlayers"
+        v-for="(player, i) in otherPlayers"
         v-bind="player"
         :interactive="
           state.currentPlayer === players.indexOf(player.playerName)
@@ -179,6 +179,8 @@ const middleResult = computed(() => {
         :self="false"
         :creator="player.playerName === creator"
         :settings="settings"
+        class="hover:scale-[200%] origin-top-left transition"
+        :class="{ 'z-30': i === 0, 'z-20': i === 1, 'z-10': i === 2 }"
       />
     </div>
   </div>

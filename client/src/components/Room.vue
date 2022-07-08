@@ -1,14 +1,16 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { without } from "lodash";
-import { TileColor } from "../model";
+import { GameSettings, TileColor } from "../model";
 import Tile from "./Tile.vue";
-const { onReorder } = defineProps<{
+const props = defineProps<{
   username: string;
   players: string[];
   roomID: string;
   creator: string;
+  settings: GameSettings;
   onReorder: (players: string[]) => void;
+  onSettingsUpdate: () => void;
   onBegin: () => void;
 }>();
 const over = ref<number>();
@@ -32,7 +34,7 @@ const onDrop = (
       dragPlayer,
       ...withoutPlayer.slice(index),
     ];
-    onReorder(reordered);
+    props.onReorder(reordered);
   }
 };
 const nav = navigator;
@@ -41,80 +43,153 @@ const location = window.location.origin;
 
 <template>
   <div class="flex flex-col justify-center w-full h-screen text-2xl">
-    <div class="flex items-center justify-center">
-      <div class="w-md">
-        <table>
-          <tr
-            v-for="(player, i) in [...players, ...Array(4 - players.length)]"
-            :draggable="creator === username && !!player"
-            :class="{
-              'outline outline-offset-2 outline-2 outline-lime-500': over === i,
-              underline: player === username,
-              'cursor-move': creator === username && !!player,
-            }"
-            @dragstart="
-              (e) => {
-                if (e.dataTransfer && player) {
-                  e.dataTransfer.setData('text/plain', player);
-                  e.dataTransfer.dropEffect = 'move';
+    <div class="flex flex-col items-center justify-center">
+      <div class="flex items-center justify-center">
+        <div class="w-md">
+          <table>
+            <tr
+              v-for="(player, i) in [...players, ...Array(4 - players.length)]"
+              :draggable="creator === username && !!player"
+              :class="{
+                'outline outline-offset-2 outline-2 outline-lime-500':
+                  over === i,
+                underline: player === username,
+                'cursor-move': creator === username && !!player,
+              }"
+              @dragstart="
+                (e) => {
+                  if (e.dataTransfer && player) {
+                    e.dataTransfer.setData('text/plain', player);
+                    e.dataTransfer.dropEffect = 'move';
+                  }
                 }
-              }
-            "
-            @dragover="
-              (e) => {
-                if (player) {
-                  over = i;
+              "
+              @dragover="
+                (e) => {
+                  if (player) {
+                    over = i;
+                    e.preventDefault();
+                    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+                  }
+                }
+              "
+              @dragleave="() => (over = undefined)"
+              @drop="
+                (e) => {
                   e.preventDefault();
-                  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+                  over = undefined;
+                  onDrop(
+                    players,
+                    i,
+                    player,
+                    e.dataTransfer?.getData('text/plain')
+                  );
                 }
-              }
-            "
-            @dragleave="() => (over = undefined)"
-            @drop="
-              (e) => {
-                e.preventDefault();
-                over = undefined;
-                onDrop(
-                  players,
-                  i,
-                  player,
-                  e.dataTransfer?.getData('text/plain')
-                );
+              "
+            >
+              <td>
+                {{ player }}
+                <span v-if="player === creator">👑</span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="flex flex-col items-center w-md">
+          <span
+            class="text-5xl transition-colors ease-out cursor-pointer"
+            :class="{
+              'text-green-800 dark:text-green-400': roomIDClicked,
+            }"
+            @click="
+              () => {
+                nav.clipboard.writeText(`${location}/#${roomID}`);
+                indicateClicked();
               }
             "
           >
-            <td>
-              {{ player }}
-              <span v-if="player === creator">👑</span>
-            </td>
-          </tr>
-        </table>
+            {{ roomID }}
+          </span>
+          <span class="mb-8 text-lg">Click ID to copy room link</span>
+          <Tile
+            v-if="username === creator"
+            role="button"
+            :color="TileColor.BLUE"
+            :unrestrained="true"
+            @click="() => onBegin()"
+          >
+            <span class="block px-8 py-4 cursor-pointer"> Start Game </span>
+          </Tile>
+        </div>
       </div>
-      <div class="flex flex-col items-center w-md">
-        <span
-          class="text-5xl transition-colors duration-200 ease-out cursor-pointer"
-          :class="{
-            'text-green-800 dark:text-green-400': roomIDClicked,
-          }"
-          @click="
-            () => {
-              nav.clipboard.writeText(`${location}/#${roomID}`);
-              indicateClicked();
-            }
-          "
-        >
-          {{ roomID }}
-        </span>
-        <span class="mb-8 text-lg">Click ID to copy room link</span>
-        <Tile
-          v-if="username === creator"
-          role="button"
-          :color="TileColor.BLUE"
-          :unrestrained="true"
-          @click="() => onBegin()"
-        >
-          <span class="block px-8 py-4 cursor-pointer"> Start Game </span>
-        </Tile>
+      <div class="flex-1 mt-8">
+        <div class="flex flex-col items-center">
+          <table>
+            <tr>
+              <td>
+                <span>Column Points:</span>
+                <input
+                  v-if="username === creator"
+                  v-model="settings.pointRewards.column"
+                />
+                <span v-if="username !== creator" class="mr-0">
+                  {{ settings.pointRewards.column }}
+                </span>
+              </td>
+              <td>
+                <span>Row Points:</span>
+                <input
+                  v-if="username === creator"
+                  v-model="settings.pointRewards.row"
+                />
+                <span v-if="username !== creator" class="mr-0">
+                  {{ settings.pointRewards.row }}
+                </span>
+              </td>
+              <td>
+                <span>All Color Points:</span>
+                <input
+                  v-if="username === creator"
+                  v-model="settings.pointRewards.color"
+                />
+                <span v-if="username !== creator" class="mr-0">
+                  {{ settings.pointRewards.color }}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td class="w-full">
+                <span>Penalty Points</span>
+                <input
+                  v-if="username === creator"
+                  v-for="(penalty, i) in settings.pointPenalties"
+                  :value="penalty"
+                  @input="
+                    (e) => {
+                      settings.pointPenalties[i] = Number((e.target as HTMLInputElement).value);
+                    }
+                  "
+                />
+                <span
+                  v-if="username !== creator"
+                  v-for="(penalty, i) in settings.pointPenalties"
+                  :class="{ 'mr-0': i === settings.pointPenalties.length - 1 }"
+                >
+                  {{ penalty }}
+                </span>
+              </td>
+            </tr>
+          </table>
+          <Tile
+            v-if="username === creator"
+            role="button"
+            :color="TileColor.BLUE"
+            :unrestrained="true"
+            class="my-4"
+            @click="onSettingsUpdate"
+          >
+            <span class="block px-8 py-4 cursor-pointer"> Apply </span>
+          </Tile>
+        </div>
       </div>
     </div>
   </div>
@@ -124,9 +199,24 @@ table {
   @apply w-full;
 }
 tr {
-  @apply border-2 w-full;
+  @apply border-x-2 border-t-2 w-full flex;
+}
+tr:last-child {
+  @apply border-b-2;
 }
 td {
   @apply px-4 h-14 flex items-center justify-between;
+}
+td:not(:last-child) {
+  @apply border-r-2;
+}
+td > span {
+  @apply mr-4;
+}
+td > span.mr-0 {
+  margin-right: 0;
+}
+input {
+  @apply bg-transparent w-10 text-end;
 }
 </style>

@@ -94,7 +94,7 @@ const hovered = computed<{
 
 <template>
   <div
-    class="flex flex-col px-8 pt-2 pb-6 border-2 w-4xl"
+    class="flex flex-col px-8 pt-2 pb-6 bg-white border-2 w-4xl dark:bg-gray-900"
     :class="{
       'border-black dark:border-gray-200': !interactive,
       'border-lime-500': interactive,

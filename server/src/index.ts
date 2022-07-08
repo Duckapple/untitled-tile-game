@@ -15,6 +15,7 @@ import {
   AssignUUIDResponse,
   MakeMoveMessage,
   TileColor,
+  UpdateSettingsMessage,
 } from "./model";
 import { createGameSettings, createGameState } from "./create";
 import { rooms, Player, createRoomID, createUUID } from "./state";
@@ -158,6 +159,7 @@ function handleBegin(ws: WS.WebSocket, m: BeginMessage) {
     type: MessageType.UPDATE_ROOM,
     state: room.state,
     update: "Game started",
+    settings: room.settings,
   };
   room.players.forEach(({ socket }) => socket.send(JSON.stringify(update)));
   log(`Began game in room ${m.roomID}`);
@@ -281,6 +283,26 @@ function handleMakeMove(ws: WS.WebSocket, m: MakeMoveMessage) {
   room.players.forEach(({ socket }) => socket.send(JSON.stringify(msg)));
 }
 
+function handleUpdateSettings(ws: WS.WebSocket, m: UpdateSettingsMessage) {
+  if (!m.roomID || !rooms[m.roomID])
+    return ws.send(createError("Incorrect room ID"));
+
+  const room = rooms[m.roomID];
+
+  if (!m.userID || room.creator.UUID !== m.userID)
+    return ws.send(createError("Invalid user ID"));
+
+  room.settings = m.settings;
+
+  const msg: UpdateRoomResponse = {
+    type: MessageType.UPDATE_ROOM,
+    update: "Updated settings",
+    settings: room.settings,
+  };
+
+  room.players.forEach(({ socket }) => socket.send(JSON.stringify(msg)));
+}
+
 app.ws("/", (ws, req) => {
   setTimeout(() => {
     const greeting: AssignUUIDResponse = {
@@ -309,6 +331,8 @@ app.ws("/", (ws, req) => {
       handleBegin(ws, m);
     } else if (m.type === MessageType.MAKE_MOVE) {
       handleMakeMove(ws, m);
+    } else if (m.type === MessageType.UPDATE_SETTINGS) {
+      handleUpdateSettings(ws, m);
     } else {
       log(`Unknown message '${msg}'`);
     }

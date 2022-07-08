@@ -18,7 +18,7 @@ defineProps<{
 
 <template>
   <div
-    class="transition-transform duration-200 hover:-translate-y-2 group isolate"
+    class="transition-transform hover:-translate-y-2 group isolate"
     :class="{ unrestrained: unrestrained, 'opacity-50': !!transparent }"
   >
     <div class="tile" :class="{ [bgColors[color]]: true, outline: outlined }">
@@ -31,7 +31,7 @@ defineProps<{
       </div>
       <slot></slot>
       <div
-        class="absolute inset-0 transition-shadow duration-200 shadow-md tile-bottom -z-10 group-hover:shadow-lg"
+        class="absolute inset-0 transition-shadow shadow-md tile-bottom -z-10 group-hover:shadow-lg"
         :class="underColors[color]"
       ></div>
     </div>
