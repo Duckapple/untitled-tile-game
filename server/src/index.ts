@@ -342,4 +342,4 @@ app.ws("/", (ws, req) => {
   });
 });
 
-app.listen(8080, () => log("Server is running"));
+app.listen(process.env.PORT, () => log("Server is running"));
