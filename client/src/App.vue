@@ -27,15 +27,17 @@ const username = ref<string>();
 const UUID = ref<string>();
 const roomDetails = ref<RoomDetails>();
 
-const notifs = ref<string[]>([]);
+const ERROR = "ERROR";
+
+const notifs = ref<{ message: string; error: boolean }[]>([]);
 
 let host = location.origin.replace(/^http/, "ws");
 if (host.match("ws://localhost")) host = "ws://localhost:8080";
 
 const ws = new WebSocket(host + "/ws");
 
-const addNotif = (message: string) => {
-  notifs.value.push(message);
+const addNotif = (message: string, isError?: typeof ERROR) => {
+  notifs.value.push({ message, error: !!isError });
   setTimeout(() => {
     notifs.value.shift();
   }, 10000);
@@ -69,7 +71,7 @@ ws.addEventListener("message", (evt) => {
     }
     if (m.update) addNotif(m.update);
   } else if (m.type === MessageType.ERROR) {
-    if (m.error) addNotif(m.error);
+    if (m.error) addNotif(m.error, ERROR);
   } else {
     addNotif(`Got unhandled message '${evt.data}'`);
   }
@@ -177,10 +179,11 @@ const onMakeMove: MakeMoveFunction = (args) => {
   />
   <div class="fixed bottom-4 right-4">
     <div
-      v-for="error in notifs"
+      v-for="{ message, error } in notifs"
       class="p-4 mb-2 bg-white border-2 border-red-500 w-md dark:bg-gray-900"
+      :class="{ 'border-red-500': error, 'border-gray-500': !error }"
     >
-      {{ error }}
+      {{ message }}
     </div>
   </div>
 </template>

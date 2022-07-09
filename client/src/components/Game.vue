@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, effect, ref } from "vue";
 import { MakeMoveFunction } from "../App.vue";
 import { GameState, TileColor, GameSettings } from "../model";
 import { store } from "../state";
@@ -7,6 +7,7 @@ import TileGroup from "./TileGroup.vue";
 import PlayerBoard from "./PlayerBoard.vue";
 import Tile from "./Tile.vue";
 import { mapValues } from "lodash";
+import { setTitle } from "../title";
 
 const props = defineProps<{
   state: GameState;
@@ -75,6 +76,13 @@ const middleResult = computed(() => {
     TileColor,
     Record<"count" | "transparent", number>
   ][];
+});
+effect(() => {
+  if (props.state.currentPlayer === props.players.indexOf(props.username)) {
+    setTitle("Your Turn!");
+  } else {
+    setTitle(`Waiting on ${props.players[props.state.currentPlayer]}`);
+  }
 });
 </script>
 

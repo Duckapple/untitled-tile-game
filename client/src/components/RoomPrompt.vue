@@ -66,7 +66,7 @@ const roomcodeError = ref<boolean>(false);
             'outline outline-2 outline-red-500': roomcodeError && !roomCode,
           }"
         />
-        <div class="flex items-center">
+        <!-- <div class="flex items-center">
           <label for="obscured" class="mr-6">Hide Room Code</label>
           <input
             type="checkbox"
@@ -75,7 +75,7 @@ const roomcodeError = ref<boolean>(false);
             id="obscured"
             class="w-8 h-8"
           />
-        </div>
+        </div> -->
         <Tile
           @click="
             () => {

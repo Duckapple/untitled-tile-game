@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { without } from "lodash";
 import { GameSettings, TileColor } from "../model";
+import { setTitle } from "../title";
 import Tile from "./Tile.vue";
 import Settings from "./Settings.vue";
 const props = defineProps<{
@@ -45,6 +46,7 @@ const applySettings = () => {
   props.onSettingsUpdate();
   settingsApplied.value = true;
 };
+setTitle(props.roomID);
 </script>
 
 <template>
