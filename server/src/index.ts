@@ -304,7 +304,7 @@ function handleUpdateSettings(ws: WS.WebSocket, m: UpdateSettingsMessage) {
   room.players.forEach(({ socket }) => socket.send(JSON.stringify(msg)));
 }
 
-app.ws("/", (ws) => {
+app.ws("/ws", (ws) => {
   setTimeout(() => {
     const greeting: AssignUUIDResponse = {
       type: MessageType.ASSIGN_UUID,
@@ -343,6 +343,8 @@ app.ws("/", (ws) => {
   });
 });
 
-const server = app.listen(port, () => log("Server is running"));
+app
+  .use(express.static("dist/public"))
+  .listen(port, () => log("Server is running"));
 
 // app.listen(, () => log("Server is running"));

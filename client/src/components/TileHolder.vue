@@ -10,7 +10,7 @@ import Tile from "./Tile.vue";
 import { ref } from "vue";
 
 const { background, color, hidden, transparent, number } = defineProps<{
-  color?: TileColor;
+  color?: TileColor | null;
   background?: TileColor;
   hidden?: boolean;
   transparent?: boolean;

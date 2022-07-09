@@ -11,9 +11,9 @@ import {
 } from "../model";
 
 export interface PlayerBoardProps extends PlayerBoard {
-  rows: (TileColor | undefined)[][];
-  table: (TileColor | undefined)[][];
-  dropped: Tuple<TileColor | undefined, 7>;
+  rows: (TileColor | undefined | null)[][];
+  table: (TileColor | undefined | null)[][];
+  dropped: Tuple<TileColor | undefined | null, 7>;
   playerName: string;
   score: number;
   creator: boolean;
@@ -31,7 +31,7 @@ const props = defineProps<PlayerBoardProps>();
 
 const hoveredRow = ref<number>();
 
-type X = { color?: TileColor; transparent?: boolean };
+type X = { color?: TileColor | null; transparent?: boolean };
 const hovered = computed<{
   rows: X[][];
   dropped: X[];

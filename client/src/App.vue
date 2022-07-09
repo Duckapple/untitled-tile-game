@@ -29,7 +29,9 @@ const roomDetails = ref<RoomDetails>();
 
 const notifs = ref<string[]>([]);
 
-const ws = new WebSocket("ws://localhost:8080");
+const host = location.origin.replace(/^http/, "ws");
+
+const ws = new WebSocket(host + "/ws");
 
 const addNotif = (message: string) => {
   notifs.value.push(message);
