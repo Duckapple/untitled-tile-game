@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { omit } from "lodash";
 import { ref } from "vue";
 import {
   TileColor,
@@ -14,7 +15,6 @@ import {
 } from "./model";
 import RoomPrompt from "./components/RoomPrompt.vue";
 import Room from "./components/Room.vue";
-import { omit } from "lodash";
 import Game from "./components/Game.vue";
 
 export type MakeMoveFunction = (args: {
@@ -29,7 +29,8 @@ const roomDetails = ref<RoomDetails>();
 
 const notifs = ref<string[]>([]);
 
-const host = location.origin.replace(/^http/, "ws");
+let host = location.origin.replace(/^http/, "ws");
+if (host.match("ws://localhost")) host = "ws://localhost:8080";
 
 const ws = new WebSocket(host + "/ws");
 

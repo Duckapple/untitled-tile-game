@@ -313,6 +313,13 @@ app.ws("/ws", (ws) => {
     ws.send(JSON.stringify(greeting));
     log(`New connection, gave ID ${greeting.userID}`);
   }, 200);
+
+  const timer = setInterval(() => {
+    ws.ping(undefined, undefined, (e) => {
+      e && clearInterval(timer);
+    });
+  }, 30000);
+
   ws.on("message", (msg) => {
     let m: Message;
     try {
