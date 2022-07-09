@@ -2,7 +2,13 @@
 import { zip } from "lodash";
 import { computed, ref } from "vue";
 import TileHolder from "./TileHolder.vue";
-import { GameSettings, PlayerBoard, TileColor, Tuple } from "../model";
+import {
+  GameSettings,
+  PlayerBoard,
+  TileColor,
+  Tuple,
+  tablePositions,
+} from "../model";
 
 export interface PlayerBoardProps extends PlayerBoard {
   rows: (TileColor | undefined)[][];
@@ -19,21 +25,7 @@ export interface PlayerBoardProps extends PlayerBoard {
   selected?: TileColor[];
 }
 
-const BLACK = TileColor.BLACK;
-const BLUE = TileColor.BLUE;
-const RED = TileColor.RED;
-const YELLOW = TileColor.YELLOW;
-const CYAN = TileColor.CYAN;
-
-// prettier-ignore
-const positions = [
-  [BLUE, YELLOW, RED, BLACK, CYAN],
-  [CYAN, BLUE, YELLOW, RED, BLACK],
-  [BLACK, CYAN, BLUE, YELLOW, RED],
-  [RED, BLACK, CYAN, BLUE, YELLOW],
-  [YELLOW, RED, BLACK, CYAN, BLUE],
-];
-const backgrounds = positions.flat();
+const backgrounds = tablePositions.flat();
 
 const props = defineProps<PlayerBoardProps>();
 

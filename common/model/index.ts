@@ -1,4 +1,5 @@
 export * from "./communication";
+export * from "./calculate";
 
 export type RoomDetails = {
   roomID: string;
@@ -49,9 +50,9 @@ type _TupleOf<T, N extends number, R extends unknown[]> = R["length"] extends N
   : _TupleOf<T, N, [T, ...R]>;
 
 export interface PlayerBoard {
-  rows: (TileColor | undefined)[][];
-  table: (TileColor | undefined)[][];
-  dropped: Tuple<TileColor | undefined, 7>;
+  rows: (TileColor | undefined | null)[][];
+  table: (TileColor | undefined | null)[][];
+  dropped: Tuple<TileColor | undefined | null, 7>;
   playerName: string;
   score: number;
 }
@@ -60,3 +61,12 @@ export interface MiddleBoard {
   plates: UpToFourColors[];
   common: Record<TileColor, number>;
 }
+
+// prettier-ignore
+export const tablePositions: Tuple<Tuple<TileColor, 5>, 5> = [
+  [TileColor.BLUE, TileColor.YELLOW, TileColor.RED, TileColor.BLACK, TileColor.CYAN],
+  [TileColor.CYAN, TileColor.BLUE, TileColor.YELLOW, TileColor.RED, TileColor.BLACK],
+  [TileColor.BLACK, TileColor.CYAN, TileColor.BLUE, TileColor.YELLOW, TileColor.RED],
+  [TileColor.RED, TileColor.BLACK, TileColor.CYAN, TileColor.BLUE, TileColor.YELLOW],
+  [TileColor.YELLOW, TileColor.RED, TileColor.BLACK, TileColor.CYAN, TileColor.BLUE],
+];
