@@ -4,7 +4,7 @@
   "repository": "git@github.com:Duckapple/untitled-tile-game.git",
   "author": "Simon Green Kristensen <git@simon-green.dev>",
   "scripts": {
-    "start": "cd server && yarn start",
+    "start": "cd server && yarn && yarn start",
     "dev": "cd server && yarn dev & cd client && yarn dev"
   },
   "license": "MIT",

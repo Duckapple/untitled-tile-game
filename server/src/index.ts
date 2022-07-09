@@ -1,4 +1,5 @@
 import express from "express";
+import expressWs from "express-ws";
 import WS from "ws";
 import {
   Message,
@@ -19,10 +20,8 @@ import {
 import { createGameSettings, createGameState } from "./create";
 import { rooms, Player, createRoomID, createUUID } from "./state";
 import log from "./log";
-const server = express().listen(process.env.PORT, () =>
-  log("Server is running")
-);
-const wss = new WS.Server({ server });
+const { app } = expressWs(express());
+const port = process.env.PORT || 8080;
 
 export function createError(error: string): string {
   const err: ErrorResponse = {
@@ -305,7 +304,7 @@ function handleUpdateSettings(ws: WS.WebSocket, m: UpdateSettingsMessage) {
   room.players.forEach(({ socket }) => socket.send(JSON.stringify(msg)));
 }
 
-wss.on("connection", (ws) => {
+app.ws("/", (ws) => {
   setTimeout(() => {
     const greeting: AssignUUIDResponse = {
       type: MessageType.ASSIGN_UUID,
@@ -343,5 +342,7 @@ wss.on("connection", (ws) => {
     log("close", code, reason);
   });
 });
+
+const server = app.listen(port, () => log("Server is running"));
 
 // app.listen(, () => log("Server is running"));
