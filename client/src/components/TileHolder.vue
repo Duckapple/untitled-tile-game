@@ -34,8 +34,7 @@ const bg = ref(background ? backgroundColors[background] : "");
     </span>
     <div
       v-if="store.settings.colorBlind && !color && background"
-      class="flex items-center justify-center w-full h-full font-serif text-5xl font-bold select-none"
-      :class="colorShorthandColors[background]"
+      class="flex items-center justify-center w-full h-full font-serif text-5xl font-bold select-none text-stone-400"
     >
       <span>{{ colorShorthands[background] }}</span>
     </div>

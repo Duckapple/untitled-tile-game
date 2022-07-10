@@ -12,10 +12,13 @@ import {
   BeginMessage,
   MakeMoveMessage,
   UpdateSettingsMessage,
+  EndStandingsMessage,
 } from "./model";
 import RoomPrompt from "./components/RoomPrompt.vue";
 import Room from "./components/Room.vue";
 import Game from "./components/Game.vue";
+import GameEnd from "./components/GameEnd.vue";
+import { stopConfetti } from "./confetti";
 
 export type MakeMoveFunction = (args: {
   row?: number;
@@ -26,6 +29,7 @@ export type MakeMoveFunction = (args: {
 const username = ref<string>();
 const UUID = ref<string>();
 const roomDetails = ref<RoomDetails>();
+const standings = ref<string[]>();
 
 const ERROR = "ERROR";
 
@@ -72,6 +76,14 @@ ws.addEventListener("message", (evt) => {
     if (m.update) addNotif(m.update);
   } else if (m.type === MessageType.ERROR) {
     if (m.error) addNotif(m.error, ERROR);
+  } else if (m.type === MessageType.END_GAME) {
+    roomDetails.value && (roomDetails.value.state = m.state);
+    standings.value = m.standings;
+  } else if (m.type === MessageType.END_STANDINGS) {
+    stopConfetti();
+    standings.value = undefined;
+    roomDetails.value = undefined;
+    location.hash = "";
   } else {
     addNotif(`Got unhandled message '${evt.data}'`);
   }
@@ -152,6 +164,16 @@ const onMakeMove: MakeMoveFunction = (args) => {
   };
   ws.send(JSON.stringify(msg));
 };
+
+const onEndStandings = () => {
+  if (!roomDetails.value || !UUID.value) return;
+  const msg: EndStandingsMessage = {
+    type: MessageType.END_STANDINGS,
+    roomID: roomDetails.value.roomID,
+    userID: UUID.value,
+  };
+  ws.send(JSON.stringify(msg));
+};
 </script>
 
 <template>
@@ -184,6 +206,12 @@ const onMakeMove: MakeMoveFunction = (args) => {
       {{ message }}
     </div>
   </div>
+  <GameEnd
+    v-if="standings"
+    :standings="standings"
+    :username="username"
+    :endGame="true ? onEndStandings : undefined"
+  />
 </template>
 
 <style>

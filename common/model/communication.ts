@@ -1,11 +1,12 @@
-import { GameSettings, RoomDetails, TileColor } from ".";
+import { GameSettings, GameState, RoomDetails, TileColor } from ".";
 export type Message =
   | CreateRoomMessage
   | JoinRoomMessage
   | RearrangePlayersMessage
   | BeginMessage
   | MakeMoveMessage
-  | UpdateSettingsMessage;
+  | UpdateSettingsMessage
+  | EndStandingsMessage;
 
 export enum MessageType {
   CREATE_ROOM = "CREATE_ROOM",
@@ -17,6 +18,8 @@ export enum MessageType {
   ERROR = "ERROR",
   ASSIGN_UUID = "ASSIGN_UUID",
   MAKE_MOVE = "MAKE_MOVE",
+  END_GAME = "END_GAME",
+  END_STANDINGS = "END_STANDINGS",
 }
 
 type UUID = string;
@@ -57,12 +60,19 @@ export type MakeMoveMessage = {
   middle?: TileColor;
   row: number;
 };
+export type EndStandingsMessage = {
+  type: MessageType.END_STANDINGS;
+  roomID: string;
+  userID: UUID;
+};
 
 export type MessageResponse =
   | CreateRoomResponse
   | JoinRoomResponse
   | UpdateRoomResponse
   | AssignUUIDResponse
+  | EndGameResponse
+  | EndStandingsResponse
   | ErrorResponse;
 
 export type CreateRoomResponse = RoomDetails & {
@@ -78,6 +88,14 @@ export type UpdateRoomResponse = Partial<Omit<RoomDetails, "roomID">> & {
 export type AssignUUIDResponse = {
   type: MessageType.ASSIGN_UUID;
   userID: UUID;
+};
+export type EndGameResponse = {
+  type: MessageType.END_GAME;
+  state: GameState;
+  standings: string[];
+};
+export type EndStandingsResponse = {
+  type: MessageType.END_STANDINGS;
 };
 export type ErrorResponse = {
   type: MessageType.ERROR;

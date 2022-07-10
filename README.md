@@ -31,10 +31,6 @@ It is automatically dropped when picked up, counting as negative points.
 
 I'm working on these things right now. Nothing can stop my progress!
 
-- The ability to calculate scores
-- The ability to end a round
-- The ability to start a new round
-- The ability to end the game, possibly with a victory screen
 - Confirmation button for moves? Depends on feedback
 - Better definitions of the rules in this very readme
 - Animations for moving tiles around

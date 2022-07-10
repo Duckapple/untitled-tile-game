@@ -1,6 +1,6 @@
 import lodash from "lodash";
 import log from "./log";
-const { shuffle } = lodash;
+const { shuffle, unzip } = lodash;
 import {
   GameSettings,
   GameState,
@@ -196,4 +196,59 @@ export function isEndOfRound(state: GameState): boolean {
   if (middleCount > 0) return false;
 
   return true;
+}
+
+function calculateEnd(board: PlayerBoard, settings: GameSettings): PlayerBoard {
+  const allTiles = board.table.flat();
+  let score = 0;
+  [
+    TileColor.BLACK,
+    TileColor.BLUE,
+    TileColor.RED,
+    TileColor.YELLOW,
+    TileColor.CYAN,
+  ].forEach((c) => {
+    if (allTiles.filter((color) => color === c).length === 5) {
+      score += settings.pointRewards.color;
+    }
+  });
+  board.table.forEach((row) => {
+    if (!row.some((c) => c == null)) {
+      score += settings.pointRewards.row;
+    }
+  });
+  unzip(board.table).forEach((col) => {
+    if (!col.some((c) => c == null)) {
+      score += settings.pointRewards.column;
+    }
+  });
+  return {
+    ...board,
+    score: board.score + score,
+  };
+}
+
+export function endGame(
+  oldState: GameState,
+  settings: GameSettings
+): { state: GameState; standings: string[] } {
+  const state: GameState = {
+    ...oldState,
+    currentPlayer: -1,
+    playerBoards: oldState.playerBoards.map((board) =>
+      calculateEnd(board, settings)
+    ),
+  };
+
+  const boards = state.playerBoards.slice();
+  boards.sort((a, b) => b.score - a.score);
+  const standings = boards.map(({ playerName }) => playerName);
+
+  return { state, standings };
+}
+
+export function isEndOfGame(state: GameState): boolean {
+  return state.playerBoards.some((board) =>
+    board.table.some((row) => row.every((c) => c != null))
+  );
 }

@@ -16,11 +16,16 @@ import {
   MakeMoveMessage,
   TileColor,
   UpdateSettingsMessage,
+  EndStandingsMessage,
+  EndStandingsResponse,
+  EndGameResponse,
 } from "./model";
 import {
   createGameSettings,
   createGameState,
+  endGame,
   endRound,
+  isEndOfGame,
   isEndOfRound,
 } from "./create";
 import { rooms, Player, createRoomID, createUUID, Room } from "./state";
@@ -326,6 +331,32 @@ function handleEndOfRound(room: Room) {
   };
 
   room.players.forEach(({ socket }) => socket.send(JSON.stringify(msg)));
+
+  if (isEndOfGame(room.state)) {
+    const msg: UpdateRoomResponse = {
+      type: MessageType.UPDATE_ROOM,
+      update: "Game ended, calculating final scores...",
+      state: {
+        ...room.state,
+        currentPlayer: -1,
+      },
+    };
+    room.players.forEach(({ socket }) => socket.send(JSON.stringify(msg)));
+    setTimeout(() => {
+      handleEndOfGame(room);
+    }, 3000);
+  }
+}
+
+function handleEndOfGame(room: Room) {
+  if (!room.state) return;
+  const { state, standings } = endGame(room.state, room.settings);
+  const msg: EndGameResponse = {
+    type: MessageType.END_GAME,
+    state,
+    standings,
+  };
+  room.players.forEach(({ socket }) => socket.send(JSON.stringify(msg)));
 }
 
 function handleUpdateSettings(ws: WS.WebSocket, m: UpdateSettingsMessage) {
@@ -346,6 +377,26 @@ function handleUpdateSettings(ws: WS.WebSocket, m: UpdateSettingsMessage) {
   };
 
   room.players.forEach(({ socket }) => socket.send(JSON.stringify(msg)));
+}
+
+function handleEndStandings(ws: WS.WebSocket, m: EndStandingsMessage) {
+  if (!m.roomID || !rooms[m.roomID])
+    return ws.send(createError("Incorrect room ID"));
+
+  const room = rooms[m.roomID];
+
+  if (!m.userID || room.creator.UUID !== m.userID)
+    return ws.send(createError("Invalid user ID"));
+
+  const msg: EndStandingsResponse = {
+    type: MessageType.END_STANDINGS,
+  };
+
+  room.players.forEach(({ socket }) => socket.send(JSON.stringify(msg)));
+
+  delete rooms[m.roomID];
+
+  log(`Ended standings for ${m.roomID}`);
 }
 
 app.ws("/ws", (ws) => {
@@ -385,6 +436,8 @@ app.ws("/ws", (ws) => {
       handleMakeMove(ws, m);
     } else if (m.type === MessageType.UPDATE_SETTINGS) {
       handleUpdateSettings(ws, m);
+    } else if (m.type === MessageType.END_STANDINGS) {
+      handleEndStandings(ws, m);
     } else {
       log(`Unknown message '${msg}'`);
     }
