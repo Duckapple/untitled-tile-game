@@ -27,7 +27,6 @@ const selectedMiddle = ref<TileColor>();
 const selectedItems = ref<TileColor[]>();
 
 const makeMove = (row: number) => {
-  console.log(row, selectedPlate.value, selectedMiddle.value);
   props.onMakeMove({
     row,
     middle: selectedMiddle.value,

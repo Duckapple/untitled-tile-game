@@ -1,5 +1,4 @@
 export * from "./communication";
-export * from "./calculate";
 
 export type RoomDetails = {
   roomID: string;

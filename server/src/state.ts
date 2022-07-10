@@ -8,7 +8,7 @@ export type Player = {
   UUID: string;
 };
 
-type Room = {
+export type Room = {
   players: Player[];
   creator: Player;
   createdAt: Date;

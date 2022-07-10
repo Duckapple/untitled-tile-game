@@ -138,12 +138,10 @@ const onBegin = () => {
 };
 
 const onMakeMove: MakeMoveFunction = (args) => {
-  console.log("hello there", args);
   if (!roomDetails.value || !UUID.value) return;
   const hasPlate = args.plate?.color != null;
   const hasMiddle = args.middle != null;
-  if (args.row == null || hasPlate === hasMiddle)
-    return console.log({ ...args }, hasPlate);
+  if (args.row == null || hasPlate === hasMiddle) return;
   const msg: MakeMoveMessage = {
     type: MessageType.MAKE_MOVE,
     roomID: roomDetails.value.roomID,

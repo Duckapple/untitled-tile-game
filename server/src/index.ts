@@ -17,8 +17,13 @@ import {
   TileColor,
   UpdateSettingsMessage,
 } from "./model";
-import { createGameSettings, createGameState } from "./create";
-import { rooms, Player, createRoomID, createUUID } from "./state";
+import {
+  createGameSettings,
+  createGameState,
+  endRound,
+  isEndOfRound,
+} from "./create";
+import { rooms, Player, createRoomID, createUUID, Room } from "./state";
 import log from "./log";
 const { app } = expressWs(express());
 const port = process.env.PORT || 8080;
@@ -279,6 +284,45 @@ function handleMakeMove(ws: WS.WebSocket, m: MakeMoveMessage) {
     type: MessageType.UPDATE_ROOM,
     state: room.state,
     update: `${room.players[playerIndex].name} ${moveDescription}`,
+  };
+
+  room.players.forEach(({ socket }) => socket.send(JSON.stringify(msg)));
+
+  if (isEndOfRound(room.state)) {
+    const msg: UpdateRoomResponse = {
+      type: MessageType.UPDATE_ROOM,
+      update: "Round ended, calculating scores...",
+    };
+    room.players.forEach(({ socket }) => socket.send(JSON.stringify(msg)));
+    setTimeout(() => handleEndOfRound(room), 3000);
+  }
+}
+
+function handleEndOfRound(room: Room) {
+  if (!room.state) return;
+
+  const points = room.state.playerBoards.map(({ score, playerName }) => ({
+    score: -score,
+    playerName,
+  }));
+
+  room.state = endRound(room.state, room.settings);
+
+  points.forEach((point, i) => {
+    point.score += room.state?.playerBoards[i].score ?? -point.score;
+  });
+
+  points.sort((a, b) => b.score - a.score);
+
+  const msg: UpdateRoomResponse = {
+    type: MessageType.UPDATE_ROOM,
+    state: room.state,
+    update: points
+      .map(
+        ({ playerName, score }) =>
+          `${playerName}: ${score > 0 ? "+" : ""}${score} points`
+      )
+      .join(", "),
   };
 
   room.players.forEach(({ socket }) => socket.send(JSON.stringify(msg)));
