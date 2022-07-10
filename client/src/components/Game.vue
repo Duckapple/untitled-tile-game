@@ -77,7 +77,11 @@ const middleResult = computed(() => {
   ][];
 });
 effect(() => {
-  if (props.state.currentPlayer === props.players.indexOf(props.username)) {
+  if (props.state.currentPlayer < 0) {
+    setTitle();
+  } else if (
+    props.state.currentPlayer === props.players.indexOf(props.username)
+  ) {
     setTitle("Your Turn!");
   } else {
     setTitle(`Waiting on ${props.players[props.state.currentPlayer]}`);
